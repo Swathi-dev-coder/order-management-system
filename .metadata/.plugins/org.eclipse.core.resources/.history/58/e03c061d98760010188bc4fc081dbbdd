@@ -1,0 +1,5 @@
+package com.oms.order_service;
+
+public class JwtValidator {
+
+}

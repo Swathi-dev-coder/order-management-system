@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Copy element &apos;SecurityConfig.java&apos; to &apos;order-service/src/main/java/com.oms.order_service&apos;&#x0D;&#x0A;- Original project: &apos;userservice&apos;&#x0D;&#x0A;- Destination element: &apos;order-service/src/main/java/com.oms.order_service&apos;&#x0D;&#x0A;- Original element: &apos;com.oms.userservice.SecurityConfig.java&apos;" description="Copy compilation unit" destination="=order-service/src\/main\/java=/optional=/true=/=/maven.pomderived=/true=/&lt;com.oms.order_service" element1="/src\/main\/java=/optional=/true=/=/maven.pomderived=/true=/&lt;com.oms.userservice{SecurityConfig.java" files="0" flags="589830" folders="0" id="org.eclipse.jdt.ui.copy" policy="org.eclipse.jdt.ui.copyResources" stamp="1754904978885" units="1" version="1.0"/>
+</session>

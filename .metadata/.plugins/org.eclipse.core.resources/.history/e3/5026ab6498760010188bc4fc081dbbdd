@@ -1,0 +1,26 @@
+package com.oms.order_service;
+@Component
+public class JwtValidator {
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    private final String userServiceUrl = "http://USER-SERVICE/auth/validate";
+
+    public String validateToken(String token) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<Map<String, String>> request = new HttpEntity<>(Map.of("token", token), headers);
+
+            ResponseEntity<Map> response = restTemplate.postForEntity(userServiceUrl, request, Map.class);
+
+            if (response.getStatusCode() == HttpStatus.OK) {
+                return (String) response.getBody().get("username");
+            }
+        } catch (HttpClientErrorException ex) {
+            // Token is invalid or expired
+        }
+        return null;
+    }
+}

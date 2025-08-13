@@ -1,0 +1,85 @@
+package com.oms.order_service;
+
+import java.io.IOException;
+import java.util.ArrayList;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+@Component
+public class JwtRequestFilter extends OncePerRequestFilter {
+	 @Autowired
+	    private JwtValidator jwtValidator;
+
+	    @Override
+	    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+	            throws ServletException, IOException {
+	        
+	        System.out.println("JwtRequestFilter: incoming -> " + request.getMethod() + " " + request.getRequestURI());
+	        
+	        // Skip JWT validation for public endpoints
+	        if (isPublicEndpoint(request.getRequestURI())) {
+	            System.out.println("JwtRequestFilter: Public endpoint, skipping JWT validation");
+	            filterChain.doFilter(request, response);
+	            return;
+	        }
+	        
+	        final String authHeader = request.getHeader("Authorization");
+	        System.out.println("JwtRequestFilter: Authorization header = " + authHeader);
+
+	        String username = null;
+	        String jwtToken = null;
+
+	        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+	            jwtToken = authHeader.substring(7);
+	            System.out.println("JwtRequestFilter: token (first 20 chars) = " + 
+	                (jwtToken.length() > 20 ? jwtToken.substring(0, 20) : jwtToken));
+
+	            username = jwtValidator.validateToken(jwtToken);
+	            System.out.println("JwtRequestFilter: username from validator = " + username);
+	        }
+
+	        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+	            // Token is valid, set authentication
+	            UsernamePasswordAuthenticationToken authToken =
+	                new UsernamePasswordAuthenticationToken(username, null, new ArrayList<>());
+	            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+	            SecurityContextHolder.getContext().setAuthentication(authToken);
+	            System.out.println("JwtRequestFilter: Authentication set for user: " + username);
+	            
+	            filterChain.doFilter(request, response);
+	        } else if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+	            // No token provided
+	            System.out.println("JwtRequestFilter: No Authorization header or not Bearer -> returning 401");
+	            sendUnauthorizedResponse(response, "Missing or invalid Authorization header");
+	        } else {
+	            // Invalid token
+	            System.out.println("JwtRequestFilter: Invalid token -> returning 401");
+	            sendUnauthorizedResponse(response, "Invalid or expired token");
+	        }
+	    }
+	    
+	    private boolean isPublicEndpoint(String uri) {
+	        return uri.equals("/") || 
+	               uri.startsWith("/api/auth/") || 
+	               uri.startsWith("/public/") ||
+	               uri.equals("/favicon.ico") ||
+	               uri.startsWith("/actuator/health");
+	    }
+	    
+	    private void sendUnauthorizedResponse(HttpServletResponse response, String message) throws IOException {
+	        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+	        response.setContentType("application/json");
+	        response.getWriter().write("{\"error\":\"" + message + "\"}");
+	    }
+
+}

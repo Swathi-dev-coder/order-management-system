@@ -1,0 +1,16 @@
+spring.application.name=userservice
+# User service configuration
+user.service.url=http://localhost:8082
+server.port=8082
+spring.datasource.url=jdbc:mysql://localhost:3306/oms_user
+spring.datasource.username=root
+spring.datasource.password=mysql
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
+
+jwt.secret=Jx8Z$4vE9uM#qP1tW!hB@Ks3nD^y7LgV*AmUcZ#5rTxNvQ2&bFdMzHwYpLoEiJ6X
+jwt.expiration-ms=3600000
+jwt.issuer=auth-service

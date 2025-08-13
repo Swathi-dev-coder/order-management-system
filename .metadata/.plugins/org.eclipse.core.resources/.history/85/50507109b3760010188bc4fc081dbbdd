@@ -1,0 +1,84 @@
+package com.oms.order_service;
+
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestTemplate;
+
+@Component
+public class JwtValidator {
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    private final String userServiceUrl ="http://localhost:8082/api/users/validate";
+    @Value("${user.service.url:http://localhost:8082}")
+    private String userServiceBaseUrl;
+
+    public String validateToken(String token) {
+        try {
+            System.out.println("JwtValidator: Validating token with User Service...");
+            
+            String validateUrl = userServiceBaseUrl + "/api/users/validate";
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("Authorization", "Bearer " + token); // Send token in header instead of body
+            
+            // Try sending token in header first (more secure)
+            HttpEntity<Void> request = new HttpEntity<>(headers);
+            
+            ResponseEntity<Map> response = restTemplate.postForEntity(validateUrl, request, Map.class);
+            
+            System.out.println("JwtValidator: Response status - " + response.getStatusCode());
+            System.out.println("JwtValidator: Response body - " + response.getBody());
+            
+            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                return (String) response.getBody().get("username");
+            }
+        } catch (HttpClientErrorException ex) {
+            System.out.println("JwtValidator: HTTP error - " + ex.getStatusCode() + ": " + ex.getMessage());
+            if (ex.getStatusCode() == HttpStatus.UNAUTHORIZED) {
+                System.out.println("JwtValidator: Token is invalid or expired");
+            }
+        } catch (ResourceAccessException ex) {
+            System.out.println("JwtValidator: Cannot connect to User Service - " + ex.getMessage());
+        } catch (Exception ex) {
+            System.out.println("JwtValidator: Unexpected error - " + ex.getMessage());
+            ex.printStackTrace();
+        }
+        return null;
+    }
+    
+    // Alternative method if user service expects token in body
+    public String validateTokenInBody(String token) {
+        try {
+            System.out.println("JwtValidator: Validating token with User Service (body method)...");
+            
+            String validateUrl = userServiceBaseUrl + "/api/users/validate";
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            
+            HttpEntity<Map<String, String>> request = new HttpEntity<>(Map.of("token", token), headers);
+            
+            ResponseEntity<Map> response = restTemplate.postForEntity(validateUrl, request, Map.class);
+            
+            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                return (String) response.getBody().get("username");
+            }
+        } catch (Exception ex) {
+            System.out.println("JwtValidator: Error in body method - " + ex.getMessage());
+        }
+        return null;
+    }
+}

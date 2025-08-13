@@ -1,0 +1,67 @@
+package com.oms.order_service.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.oms.order_service.model.Order;
+import com.oms.order_service.mqconfig.NotificationProducer;
+import com.oms.order_service.service.OrderService;
+
+@RestController
+@RequestMapping("/api/orders")
+public class OrderController {
+	@Autowired
+	private OrderService service;
+	@Autowired
+	private NotificationProducer notificationProducer;	
+	  @GetMapping
+	    public ResponseEntity<List<String>> getOrders() {
+	        // dummy orders list
+	        return ResponseEntity.ok(List.of("Order1", "Order2"));
+	    }
+	  @GetMapping("/ping")
+	  public ResponseEntity<String> ping() {
+	      System.out.println("OrderController: ping received");
+	      return ResponseEntity.ok("pong");
+	  }
+
+//	@GetMapping
+//	public List<Order> getAllOrders(){
+//		return service.getAllOrders();
+//	}
+	
+	@GetMapping("/{id}")
+	public ResponseEntity<Order> getOrder(@PathVariable Long id){
+		Order order = service.getOrderById(id);
+		return order!=null? ResponseEntity.ok(order): ResponseEntity.notFound().build();
+	}
+	
+	@PostMapping
+	public Order addOrder(@RequestBody Order order){
+		Order savedOrder = service.saveOrder(order);
+		notificationProducer.sendOrderNotification("Order created: " + savedOrder.getId());
+		return savedOrder;
+	}
+	
+//	@PutMapping("/{id}")
+//	public ResponseEntity<Order> getOrder(@PathVariable Long id, @RequestBody Order order){
+//		Order updated = service.updateOrder(id,order);
+//		return updated !=null ? ResponseEntity.ok(updated): ResponseEntity.notFound().build();
+//	}
+	
+	@DeleteMapping("/{id}")
+	public void deleteOrder(@PathVariable Long id){
+		service.deleteOrder(id);
+		
+	}
+	
+}
