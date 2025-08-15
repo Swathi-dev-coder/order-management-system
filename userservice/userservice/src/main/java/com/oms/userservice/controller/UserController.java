@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.oms.userservice.JwtUtil;
 import com.oms.userservice.model.User;
 import com.oms.userservice.service.UserService;
 @RestController
@@ -23,19 +22,19 @@ public class UserController {
 	@Autowired
 	private UserService service;
 	@Autowired
-	private JwtUtil jwtUtil;
-	@PostMapping("/validate")
-	public ResponseEntity<?> validateToken(@RequestBody Map<String, String> body) {
-		String token = body.get("token");
-
-		if (token == null || !jwtUtil.validateToken(token)) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
-		}
-
-		String username = jwtUtil.getUsernameFromToken(token);
-		return ResponseEntity.ok(Map.of("username", username));
-		
-	}
+//	private JwtUtil jwtUtil;
+//	@PostMapping("/validate")
+//	public ResponseEntity<?> validateToken(@RequestBody Map<String, String> body) {
+//		String token = body.get("token");
+//
+//		if (token == null || !jwtUtil.validateToken(token)) {
+//			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+//		}
+//
+//		String username = jwtUtil.getUsernameFromToken(token);
+//		return ResponseEntity.ok(Map.of("username", username));
+//		
+//	}
 
 	@GetMapping
 	public List<User> getAllUsers(){

@@ -1,0 +1,8 @@
+com\oms\userservice\dao\UserRepository.class
+com\oms\userservice\controller\UserController.class
+com\oms\userservice\model\User.class
+com\oms\userservice\exception\GlobalExceptionHandler.class
+com\oms\userservice\service\UserService.class
+com\oms\userservice\exception\ResourceNotFoundException.class
+com\oms\userservice\UserserviceApplication$HelloController.class
+com\oms\userservice\UserserviceApplication.class

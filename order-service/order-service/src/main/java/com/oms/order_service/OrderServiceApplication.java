@@ -13,11 +13,11 @@ public class OrderServiceApplication {
 		SpringApplication.run(OrderServiceApplication.class, args);
 	}
 
-@RestController
-class HelloController {
-    @GetMapping("/")
-    public String hello() {
-        return "Hello1, World!";
-    }
-}
+	@RestController
+	class HelloController {
+		@GetMapping("/")
+		public String hello() {
+			return "Hello1, World!";
+		}
+	}
 }

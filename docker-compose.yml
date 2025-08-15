@@ -1,3 +1,43 @@
+# version: '3.8'
+# services:
+#   rabbitmq:
+#     image: rabbitmq:3-management
+#     container_name: rabbitmq
+#     ports:
+#       - "5672:5672"
+#       - "15672:15672"
+    
+
+
+#   user-service:
+#     build: ./userservice/userservice
+#     container_name: user-service
+#     ports:
+#       - "8082:8082"
+#     depends_on:
+#       rabbitmq:
+#         condition: service_healthy
+
+#   order-service:
+#     build: ./order-service/order-service
+#     container_name: order-service
+#     ports:
+#       - "8081:8081"
+#     depends_on:
+#       rabbitmq:
+#         condition: service_healthy
+      
+
+#   notification-service:
+#     build: ./notification-service/notification-service
+#     container_name: notification-service
+#     ports:
+#       - "8083:8083"
+#     depends_on:
+#       rabbitmq:
+#         condition: service_healthy
+      
+
 services:
   mysql-db:
     image: mysql:8
@@ -10,11 +50,11 @@ services:
     networks:
       - my-network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p$${MYSQL_ROOT_PASSWORD}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-pmysql"]
       interval: 10s
       timeout: 5s
     volumes:
-      - mysql-data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -26,48 +66,55 @@ services:
       - my-network
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
-      interval: 10s
+      interval: 30s
       timeout: 5s
       retries: 5
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
     
   user-service:
     image: swathich1/user-service:latest
-    build: ./userservice/userservice
+    build:
+      context: ./userservice/userservice
+      dockerfile: Dockerfile
     container_name: user-service
     ports:
       - "8082:8082"
     depends_on:
       mysql-db:
         condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
+
     networks:
       - my-network
    
 
   order-service:
     image: swathich1/order-service:latest
-    build: ./order-service/order-service
+    build: 
+      context: ./order-service/order-service
+      dockerfile: Dockerfile
     container_name: order-service
     ports:
       - "8081:8081"
     depends_on:
       mysql-db:
         condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
+  
     networks:
       - my-network
     
 
   notification-service:
     image: swathich1/notification-service:latest
-    build: ./notification-service/notification-service
+    build: 
+      context: ./notification-service/notification-service
+      dockerfile: Dockerfile
     container_name: notification-service
     ports:
       - "8083:8083"
+
     depends_on:
-      rabbitmq:
+      mysql-db:
         condition: service_healthy
     networks:
       - my-network
@@ -78,3 +125,4 @@ networks:
 
 volumes:
   mysql-data:
+  rabbitmq-data:
