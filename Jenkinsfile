@@ -119,8 +119,7 @@ pipeline {
       echo "Pipeline failed. Check the stage logs."
     }
     always {
-      // If you keep surefire reports, you could archive them like this (optional):
-      // archiveArtifacts artifacts: '**/target/surefire-reports/*.xml', allowEmptyArchive: true
+      echo "Cleaning up or archiving artifacts if needed."
     }
   }
 }
