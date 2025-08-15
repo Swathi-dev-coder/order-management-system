@@ -58,10 +58,10 @@
 			<artifactId>spring-rabbit-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
+		<!-- <dependency>
 		    <groupId>org.springframework.boot</groupId>
 		    <artifactId>spring-boot-starter-security</artifactId>
-		</dependency>
+		</dependency> -->
 		
 		<dependency>
 		    <groupId>io.jsonwebtoken</groupId>
