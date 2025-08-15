@@ -23,21 +23,11 @@ public class OrderController {
 	private OrderService service;
 	@Autowired
 	private NotificationProducer notificationProducer;	
-	  @GetMapping
-	    public ResponseEntity<List<String>> getOrders() {
-	        // dummy orders list
-	        return ResponseEntity.ok(List.of("Order1", "Order2"));
-	    }
-	  @GetMapping("/ping")
-	  public ResponseEntity<String> ping() {
-	      System.out.println("OrderController: ping received");
-	      return ResponseEntity.ok("pong");
-	  }
 
-//	@GetMapping
-//	public List<Order> getAllOrders(){
-//		return service.getAllOrders();
-//	}
+	@GetMapping
+	public List<Order> getAllOrders(){
+		return service.getAllOrders();
+	}
 	
 	@GetMapping("/{id}")
 	public ResponseEntity<Order> getOrder(@PathVariable Long id){
