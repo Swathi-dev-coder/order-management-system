@@ -9,22 +9,35 @@ pipeline {
   environment {
     DOCKERHUB_NAMESPACE = 'swathich1'
     DOCKERHUB_CREDENTIALS_ID = 'dockerhub'
-    SERVICES = "user-service order-service notification-service"
+    SERVICES = "userservice order-service notification-service"
     COMPOSE_FILE = 'docker-compose.yml'
   }
 
   stages {
+
     stage('Cleanup Workspace') {
-            steps {
-                echo 'Cleaning workspace...'
-                deleteDir() // This deletes everything in the workspace
-            }
-        }
-    stage('Checkout') {
       steps {
-        checkout scm
+        echo 'Cleaning workspace...'
+        deleteDir()
+      }
+    }
+
+    stage('Clone Repository') {
+      steps {
+        sh """
+          rm -rf order-management-system
+          git clone https://github.com/Swathi-dev-coder/order-management-system
+        """
+      }
+    }
+
+    stage('Get Commit Hash') {
+      steps {
         script {
-          env.GIT_COMMIT_SHORT = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+          env.GIT_COMMIT_SHORT = sh(
+            script: "git -C order-management-system rev-parse --short HEAD",
+            returnStdout: true
+          ).trim()
           echo "Building commit ${env.GIT_COMMIT_SHORT}"
         }
       }
@@ -32,28 +45,25 @@ pipeline {
 
     stage('Build (Maven)') {
       parallel {
-        stage('user-service') {
+        stage('userservice') {
           steps {
-            sh """
-              cd user-service
-              mvn -B clean package -DskipTests
-            """
+            dir('order-management-system/userservice/userservice') {
+              sh 'mvn -B clean package -DskipTests'
+            }
           }
         }
         stage('order-service') {
           steps {
-            sh """
-              cd order-service
-              mvn -B clean package -DskipTests
-            """
+            dir('order-management-system/order-service/order-service') {
+              sh 'mvn -B clean package -DskipTests'
+            }
           }
         }
         stage('notification-service') {
           steps {
-            sh """
-              cd notification-service
-              mvn -B clean package -DskipTests
-            """
+            dir('order-management-system/notification-service/notification-service') {
+              sh 'mvn -B clean package -DskipTests'
+            }
           }
         }
       }
@@ -64,8 +74,8 @@ pipeline {
         sh """
           set -e
           for S in ${SERVICES}; do
-            echo "Building image for \$S ..."
-            docker build -t ${DOCKERHUB_NAMESPACE}/\${S}:latest -t ${DOCKERHUB_NAMESPACE}/\${S}:${GIT_COMMIT_SHORT} ${S}
+            echo "Building Docker image for \$S ..."
+            docker build -t ${DOCKERHUB_NAMESPACE}/\$S:latest -t ${DOCKERHUB_NAMESPACE}/\$S:${GIT_COMMIT_SHORT} order-management-system/\$S/\$S
           done
         """
       }
@@ -73,12 +83,16 @@ pipeline {
 
     stage('Docker Login & Push') {
       steps {
-       withCredentials([usernamePassword(credentialsId: "dockerhub", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+        withCredentials([usernamePassword(
+          credentialsId: "${DOCKERHUB_CREDENTIALS_ID}",
+          usernameVariable: 'DOCKER_USER',
+          passwordVariable: 'DOCKER_PASS'
+        )]) {
           sh """
-             echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
-             for S in ${SERVICES}; do
-              docker push ${DOCKERHUB_NAMESPACE}/\${S}:latest
-              docker push ${DOCKERHUB_NAMESPACE}/\${S}:${GIT_COMMIT_SHORT}
+            echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
+            for S in ${SERVICES}; do
+              docker push ${DOCKERHUB_NAMESPACE}/\$S:latest
+              docker push ${DOCKERHUB_NAMESPACE}/\$S:${GIT_COMMIT_SHORT}
             done
             docker logout
           """
@@ -89,10 +103,8 @@ pipeline {
     stage('Deploy (docker-compose)') {
       steps {
         sh """
-          # Uses images tagged 'latest' by default as referenced in docker-compose.yml
           docker-compose down || docker compose down
-	  docker-compose up -d || docker compose up -d
-
+          docker-compose up -d || docker compose up -d
         """
       }
     }
@@ -101,17 +113,16 @@ pipeline {
       steps {
         sh """
           for url in 8081 8082 8083; do
-  		echo "Checking service at port $url ..."
-  		for i in {1..5}; do
-    		   if curl -sf http://localhost:$url/actuator/health; then
-      			echo "Service on $url is healthy"
-      			break
-    		   fi
-    		   echo "Retry in 5s..."
-    		   sleep 5
-  	        done
-	  done
-
+            echo "Checking service at port \$url ..."
+            for i in {1..5}; do
+              if curl -sf http://localhost:\$url/actuator/health; then
+                echo "Service on \$url is healthy"
+                break
+              fi
+              echo "Retry in 5s..."
+              sleep 5
+            done
+          done
         """
       }
     }
@@ -129,4 +140,3 @@ pipeline {
     }
   }
 }
-
