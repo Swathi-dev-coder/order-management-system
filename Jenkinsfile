@@ -1,9 +1,6 @@
 pipeline {
-   agent {
-    docker {
-      image 'maven:3.8.6-openjdk-17'
-    }
-  }
+  agent any
+
   options {
     timestamps()
     disableConcurrentBuilds()
@@ -17,6 +14,12 @@ pipeline {
   }
 
   stages {
+    stage('Cleanup Workspace') {
+            steps {
+                echo 'Cleaning workspace...'
+                deleteDir() // This deletes everything in the workspace
+            }
+        }
     stage('Checkout') {
       steps {
         checkout scm
