@@ -181,17 +181,19 @@ pipeline {
     stage('Deploy (docker-compose)') {
       steps {
            dir('order-management-system') {
- 	      sh """
+ 	      script {
                	  echo "📂 Current Jenkins workspace path: ${pwd()}"
-	      """
+	      
 	      if (fileExists(env.COMPOSE_FILE)) {
-                sh """
+		echo "Found ${env.COMPOSE_FILE}, running docker-compose"                
+		sh """
                   # If docker-compose installed
                   docker-compose -f ${COMPOSE_FILE} down || true
                   docker-compose -f ${COMPOSE_FILE} up -d || true
                 """
  		}else {
-                    echo "⚠️ ${env.COMPOSE_FILE} not found in order-management-system/"
+                    echo "⚠️ ${env.COMPOSE_FILE} not found in : ${pwd()}"
+                    sh "ls -la"
                 }
                    
                
