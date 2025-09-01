@@ -178,16 +178,16 @@ pipeline {
     //   }
     // }
 //--------------------------------------------------
-	stage('Cleanup') {
-    		steps {
-     	 	  sh '''
-        		  echo "🧹 Cleaning up old containers..."
-	      	   	 docker rm -f mysql-db || true
-         		 docker rm -f rabbitmq || true
-         		 docker network prune -f || true
-       		 '''
-   		 }
-	}
+	// stage('Cleanup') {
+  //   		steps {
+  //    	 	  sh '''
+  //       		  echo "🧹 Cleaning up old containers..."
+	//       	   	 docker rm -f mysql-db || true
+  //        		 docker rm -f rabbitmq || true
+  //        		 docker network prune -f || true
+  //      		 '''
+  //  		 }
+	// }
 
     stage('Deploy (docker-compose)') {
       steps {
