@@ -196,7 +196,7 @@ pipeline {
                     sh "ls -la"
                 }
                    
-               
+               }
             }
       }
     }
