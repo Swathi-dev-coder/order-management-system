@@ -36,9 +36,6 @@ services:
     
   user-service:
     image: swathich1/user-service:latest
-    build:
-      context: ./userservice/userservice
-      dockerfile: Dockerfile
     container_name: user-service
     restart: always
     ports:
@@ -53,9 +50,6 @@ services:
 
   order-service:
     image: swathich1/order-service:latest
-    build: 
-      context: ./order-service/order-service
-      dockerfile: Dockerfile
     container_name: order-service
     restart: always
     ports:
@@ -70,9 +64,6 @@ services:
 
   notification-service:
     image: swathich1/notification-service:latest
-    build: 
-      context: ./notification-service/notification-service
-      dockerfile: Dockerfile
     container_name: notification-service
     restart: always
     ports:
