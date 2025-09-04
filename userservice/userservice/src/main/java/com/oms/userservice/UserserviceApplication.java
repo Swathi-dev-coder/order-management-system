@@ -11,11 +11,4 @@ public class UserserviceApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(UserserviceApplication.class, args);
 	}
-	@RestController
-	class HelloController {
-	    @GetMapping("/")
-	    public String hello() {
-	        return "Hello3, World!";
-	    }
-	}
 }

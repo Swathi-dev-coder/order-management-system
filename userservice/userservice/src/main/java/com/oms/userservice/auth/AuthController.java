@@ -1,0 +1,38 @@
+package com.oms.userservice.auth;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import com.oms.userservice.model.User;
+import com.oms.userservice.service.UserService;
+
+@RestController
+@RequestMapping("/api/auth")
+public class AuthController {
+	@Autowired
+	private JwtUtil jwtUtil;
+	@Autowired
+	private UserService userService;
+
+	@PostMapping("/login")
+	public ResponseEntity<?> login(@RequestBody AuthRequest request) {
+		User user = userService.findByEmail(request.getEmail());
+		if (user != null && userService.passwordMatches(request.getPassword(), user.getPassword())) {
+			String token = jwtUtil.generateToken(user.getName(),user.getRole(),user.getEmail());
+			return ResponseEntity.ok(new AuthResponse(token));
+		}
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+		//        if (USERNAME.equals(request.getUsername()) && PASSWORD.equals(request.getPassword())) {
+		//            String token = jwtUtil.generateToken(request.getUsername(), request.getRole());
+		//            return ResponseEntity.ok(new AuthResponse(token));
+		//        }
+		//        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+	}
+
+}

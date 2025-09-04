@@ -1,13 +1,32 @@
 package com.oms.notification_service.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.oms.notification_service.emailservice.EmailService;
 
 @Service
 public class NotificationListener {
+    private static final Logger logger = LoggerFactory.getLogger(NotificationListener.class);
+
+	@Autowired
+	private EmailService emailService;
+
+
 	@RabbitListener(queues = RabbitConfig.QUEUE_NAME)
-    public void receiveMessage(String message) {
-        System.out.println("Notification received: " + message);
-        // You can add more complex notification logic here (email, SMS, etc.)
-    }
+	public void receiveMessage(NotificationMessage  message) {
+		try {
+			logger.info("Notification received: " + message.getBody());
+			emailService.sendNotification(
+					message.getToEmail(),     
+					message.getSubject(),    
+					message.getBody()
+					);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }

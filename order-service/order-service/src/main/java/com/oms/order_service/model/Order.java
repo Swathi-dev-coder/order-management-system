@@ -14,7 +14,7 @@ public class Order {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 	@Column
-    private String customerName;
+	private String customerEmail;  
 	@Column
     private String product;
 	@Column
@@ -22,12 +22,12 @@ public class Order {
     
 	public Order() {}
 	
-	public Order(Long id, String customerName, String product, int quantity) {
+	public Order(Long id, String customerEmail, String product, int quantity) {
 		super();
 		this.id = id;
-		this.customerName = customerName;
 		this.product = product;
 		this.quantity = quantity;
+		this.customerEmail= customerEmail;
 	}
 	public Long getId() {
 		return id;
@@ -35,12 +35,7 @@ public class Order {
 	public void setId(Long id) {
 		this.id = id;
 	}
-	public String getCustomerName() {
-		return customerName;
-	}
-	public void setCustomerName(String customerName) {
-		this.customerName = customerName;
-	}
+
 	public String getProduct() {
 		return product;
 	}
@@ -53,5 +48,14 @@ public class Order {
 	public void setQuantity(int quantity) {
 		this.quantity = quantity;
 	}
+
+	public String getCustomerEmail() {
+		return customerEmail;
+	}
+
+	public void setCustomerEmail(String customerEmail) {
+		this.customerEmail = customerEmail;
+	}
+	
     
 }

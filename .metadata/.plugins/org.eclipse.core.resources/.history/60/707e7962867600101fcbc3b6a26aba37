@@ -1,5 +1,0 @@
-package com.oms.userservice;
-
-public class SecurityConfig {
-
-}

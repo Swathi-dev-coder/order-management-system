@@ -2,8 +2,12 @@ package com.oms.order_service.controller;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,12 +17,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.oms.order_service.model.Order;
+import com.oms.order_service.mqconfig.NotificationMessage;
 import com.oms.order_service.mqconfig.NotificationProducer;
 import com.oms.order_service.service.OrderService;
 
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
+	private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
+
 	@Autowired
 	private OrderService service;
 	@Autowired
@@ -28,30 +35,50 @@ public class OrderController {
 	public List<Order> getAllOrders(){
 		return service.getAllOrders();
 	}
-	
+	//	//Testing - get authorized end-point
+	//	@PreAuthorize("hasRole('ADMIN')")
+	//	@GetMapping("/secure")
+	//	public ResponseEntity<?> secureEndpoint() {
+	//	    return ResponseEntity.ok("Admin-only data");
+	//	}
+
 	@GetMapping("/{id}")
 	public ResponseEntity<Order> getOrder(@PathVariable Long id){
 		Order order = service.getOrderById(id);
 		return order!=null? ResponseEntity.ok(order): ResponseEntity.notFound().build();
 	}
-	
+
 	@PostMapping
-	public Order addOrder(@RequestBody Order order){
+	public Order addOrder(@RequestBody Order order,Authentication authentication){
+		String email = authentication.getName();
+		//	    String email = null;
+		//	    
+		//	    if (authentication != null) {
+		//	        Object details = authentication.getDetails();
+		//	        if (details instanceof String) {
+		//	            email = (String) details;
+		//	        }
+		//	        System.out.println(details.toString());
+		//	        // Or if you put email as principal, use authentication.getName() or cast principal accordingly
+		//	    }
+		//	    
+		order.setCustomerEmail(email);
 		Order savedOrder = service.saveOrder(order);
-		notificationProducer.sendOrderNotification("Order created: " + savedOrder.getId());
+		NotificationMessage notification = new NotificationMessage(
+				savedOrder.getCustomerEmail(),
+				"Order Created",
+				"Dear Customer, Your order "+savedOrder.getProduct()+" has been placed. Quantity of "+savedOrder.getQuantity());
+		notificationProducer.sendOrderNotification(notification);
+		logger.info("email: "+email + " , "+savedOrder.getProduct());
 		return savedOrder;
 	}
-	
-//	@PutMapping("/{id}")
-//	public ResponseEntity<Order> getOrder(@PathVariable Long id, @RequestBody Order order){
-//		Order updated = service.updateOrder(id,order);
-//		return updated !=null ? ResponseEntity.ok(updated): ResponseEntity.notFound().build();
-//	}
-	
+
+
 	@DeleteMapping("/{id}")
 	public void deleteOrder(@PathVariable Long id){
 		service.deleteOrder(id);
-		
+
 	}
-	
+
 }
+

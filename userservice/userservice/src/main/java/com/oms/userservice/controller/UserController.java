@@ -1,11 +1,18 @@
 package com.oms.userservice.controller;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,28 +21,49 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.oms.userservice.auth.JwtUtil;
 import com.oms.userservice.model.User;
 import com.oms.userservice.service.UserService;
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
+	private static final Logger logger = LoggerFactory.getLogger(UserController.class);
+
 	@Autowired
 	private UserService service;
 	@Autowired
-//	private JwtUtil jwtUtil;
-//	@PostMapping("/validate")
-//	public ResponseEntity<?> validateToken(@RequestBody Map<String, String> body) {
-//		String token = body.get("token");
-//
-//		if (token == null || !jwtUtil.validateToken(token)) {
-//			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
-//		}
-//
-//		String username = jwtUtil.getUsernameFromToken(token);
-//		return ResponseEntity.ok(Map.of("username", username));
-//		
-//	}
+	private JwtUtil jwtUtil;
 
+	@Autowired
+	private PasswordEncoder  passwordEncoder;
+
+	@PostMapping("/validate")
+	public ResponseEntity<?> validateToken(@RequestBody Map<String, String> body) {
+		String token = body.get("token");
+		logger.info("token: ",token);
+		if (token == null) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token missing");
+		}
+
+		try {
+			if (!jwtUtil.validateToken(token)) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+			}
+			String username = jwtUtil.getUsernameFromToken(token);
+			return ResponseEntity.ok(Map.of("username", username));
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Something went wrong"));
+		}		
+	}
+
+	@GetMapping("/profile")
+	public ResponseEntity<?> getUserProfile(Authentication authentication) {
+		String username = authentication.getName(); // From JWT
+		Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+		List<String> list = authorities.stream().map(GrantedAuthority::getAuthority).toList();
+		return ResponseEntity.ok(Map.of("username", username, "role", list));
+	}
 	@GetMapping
 	public List<User> getAllUsers(){
 		return service.getAllUsers();
@@ -49,6 +77,8 @@ public class UserController {
 
 	@PostMapping
 	public User createUser(@RequestBody User user) {
+		logger.info("Adding New User : ",user.getEmail());
+		user.setPassword(passwordEncoder.encode(user.getPassword()));
 		return service.saveUser(user);
 	}
 

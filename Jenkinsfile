@@ -41,12 +41,6 @@ pipeline {
             returnStdout: true
           ).trim()
           echo "Building commit ${env.GIT_COMMIT_SHORT}"
-         // Get commit hash from current workspace
-        //   env.GIT_COMMIT_SHORT = sh(
-        //     script: "git rev-parse --short HEAD",
-        //     returnStdout: true
-        //   ).trim()
-        //   echo "Building commit ${env.GIT_COMMIT_SHORT}"
         }
       }
     }
@@ -77,23 +71,6 @@ pipeline {
         }
       }
     }
-    // stage('Docker Build & Tag') {
-    //     steps {
-    //         script {
-    //             def commit = env.GIT_COMMIT_SHORT
-    //             for (mapping in SERVICE_IMAGE_MAP.split()) {
-    //                 def folder = mapping.split(':')[0]
-    //                 def image = mapping.split(':')[1]
-    //                 echo "Building Docker image for ${image} from folder ${folder} with tag ${commit}"
-    //                 sh """
-    //                     docker build -t ${DOCKERHUB_NAMESPACE}/${image}:latest \
-    //                                 -t ${DOCKERHUB_NAMESPACE}/${image}:${commit} \
-    //                                 order-management-system/${folder}/${folder}
-    //                 """
-    //             }
-    //         }
-    //     }
-    // }
     stage('Docker Build & Tag') {
         steps {
             script {
@@ -141,105 +118,28 @@ pipeline {
             }
         }
     }
-    //--------------------------------------------------
-    // stage('Test Deploy to Local Minikube') {
-    //   steps {
-    //       sh '''
-    //         echo "Starting Minikube..."
-    //         minikube start --driver=docker --memory=4096
-    //         echo "Creating namespace if not exists..."
-    //         kubectl create namespace microservices-app --dry-run=client -o yaml | kubectl apply -f -
-
-    //         echo "Applying Kubernetes YAML..."
-    //         kubectl apply -f k8s-deployment.yaml --namespace=microservices-app
-
-    //         echo "Waiting for deployments to roll out..."
-    //         kubectl rollout status deployment/user-service -n microservices-app
-    //         kubectl rollout status deployment/order-service -n microservices-app
-    //         kubectl rollout status deployment/notification-service -n microservices-app
-             
-    //         echo "Listing all resources in microservices-app namespace..."
-    //         kubectl get all -n microservices-app
-
-    //         echo "Checking pod status..."
-    //         kubectl get pods -n microservices-app
-
-    //         echo "Checking service URLs..."
-    //         minikube service user-service -n microservices-app --url
-    //         minikube service order-service -n microservices-app --url
-    //         minikube service notification-service -n microservices-app --url
-    //       '''
-    //   }
-    //   post {
-    //     always {
-    //       echo "Cleaning up Minikube..."
-    //       sh 'minikube delete'
-    //     }
-    //   }
-    // }
-//--------------------------------------------------
-	// stage('Cleanup') {
-  //   		steps {
-  //    	 	  sh '''
-  //       		  echo "🧹 Cleaning up old containers..."
-	//       	   	 docker rm -f mysql-db || true
-  //        		 docker rm -f rabbitmq || true
-  //        		 docker network prune -f || true
-  //      		 '''
-  //  		 }
-	// }
-
     stage('Deploy (docker-compose)') {
       steps {
            dir('order-management-system') {
  	      script {
                	  echo "📂 Current Jenkins workspace path: ${pwd()}"
 	      
-	      if (fileExists(env.COMPOSE_FILE)) {
-		echo "Found ${env.COMPOSE_FILE}, running docker-compose"                
-		sh """
-                  # If docker-compose installed
-                  docker-compose -f ${COMPOSE_FILE} down || true
-                  docker-compose -f ${COMPOSE_FILE} up -d || true
-                """
- 		}else {
-                    echo "⚠️ ${env.COMPOSE_FILE} not found in : ${pwd()}"
-                    sh "ls -la"
-                }
+                  if (fileExists(env.COMPOSE_FILE)) {
+                    echo "Found ${env.COMPOSE_FILE}, running docker-compose"                
+                    sh """
+                          # If docker-compose installed
+                          docker-compose -f ${COMPOSE_FILE} down || true
+                          docker-compose -f ${COMPOSE_FILE} up -d || true
+                        """
+                  }else {
+                            echo "⚠️ ${env.COMPOSE_FILE} not found in : ${pwd()}"
+                            sh "ls -la"
+                        }
                    
-               }
-            }
+                }
+          }
       }
     }
-//--------------------------------------------------
-//stage('Deploy to Kubernetes') {
-//  steps {
-//    dir('order-management-system/k8s') {
-      //sh 'kubectl apply -f .'
-    //}
-  //}
-//}
-//--------------------------------------------------
-
-
-//     stage('Sanity Check') {
-//       steps {
-//         sh """
-//           for url in 8081 8082 8083; do
-//             echo "Checking service at port \$url ..."
-//             for i in {1..5}; do
-//               if curl -sf http://localhost:\$url/actuator/health; then
-//                 echo "Service on \$url is healthy"
-//                 break
-//               fi
-//               echo "Retry in 5s..."
-//               sleep 5
-//             done
-//           done
-//         """
-//       }
-//     }
-//   }
 }
 
   post {

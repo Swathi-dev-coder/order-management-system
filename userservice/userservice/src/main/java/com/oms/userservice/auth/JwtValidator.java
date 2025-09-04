@@ -1,0 +1,42 @@
+package com.oms.userservice.auth;
+
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
+
+//@Component
+//public class JwtValidator {
+//
+//    @Autowired
+//    private RestTemplate restTemplate;
+//
+//    @Value("${auth.service.url}")
+//    private String authValidateUrl;
+//
+//
+//    public String validateToken(String token) {
+//        try {
+//            HttpHeaders headers = new HttpHeaders();
+//            headers.setContentType(MediaType.APPLICATION_JSON);
+//            HttpEntity<Map<String, String>> request = new HttpEntity<>(Map.of("token", token), headers);
+//
+//            ResponseEntity<Map> response = restTemplate.postForEntity(authValidateUrl, request, Map.class);
+//
+//            if (response.getStatusCode() == HttpStatus.OK) {
+//                return (String) response.getBody().get("username");
+//            }
+//        } catch (HttpClientErrorException ex) {
+//            // Token is invalid or expired
+//        }
+//        return null;
+//    }
+//}

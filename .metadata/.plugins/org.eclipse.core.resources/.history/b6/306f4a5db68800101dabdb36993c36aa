@@ -1,0 +1,28 @@
+package com.oms.notification_service.config;
+
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.oms.notification_service.emailservice.EmailService;
+
+@Service
+public class NotificationListener {
+    @Autowired
+    private EmailService emailService;
+    
+    
+	@RabbitListener(queues = RabbitConfig.QUEUE_NAME)
+    public void receiveMessage(String message) {
+      try {
+    	  System.out.println("Notification received: " + message);
+        emailService.sendNotification(
+                "swathi.receiver.test@gmail.com", 	// recipient email
+                "Order Created",          		// subject
+                message                      	// message body
+            );
+	 } catch (Exception e) {
+	        e.printStackTrace();
+	    }
+    }
+}
