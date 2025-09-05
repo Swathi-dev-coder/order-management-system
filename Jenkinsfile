@@ -38,13 +38,15 @@ pipeline {
 
     stage('Get Commit Hash') {
       steps {
-        script {
-          env.GIT_COMMIT_SHORT = sh(
-            script: "git -C order-management-system rev-parse --short HEAD",
-            returnStdout: true
-          ).trim()
-          echo "Building commit ${env.GIT_COMMIT_SHORT}"
-        }
+          dir('order-management-system') {
+            script {
+              env.GIT_COMMIT_SHORT = sh(
+                script: "git rev-parse --short HEAD",
+                returnStdout: true
+              ).trim()
+              echo "Building commit ${env.GIT_COMMIT_SHORT}"
+            }
+          }
       }
     }
 
