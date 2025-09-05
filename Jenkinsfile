@@ -14,7 +14,10 @@ pipeline {
     SERVICE_IMAGE_MAP = "userservice:user-service order-service:order-service notification-service:notification-service"
     COMPOSE_FILE = 'docker-compose.yml'
   }
-
+  tools {
+        maven 'Maven 3'   // You'll need to install Maven via Jenkins Global Tool Config
+        jdk 'JDK 17'      // Also install JDK in Jenkins
+  }
   stages {
 
     stage('Cleanup Workspace') {
