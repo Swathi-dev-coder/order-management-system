@@ -27,28 +27,50 @@ pipeline {
       }
     }
 
-    stage('Clone Repository') {
+    // stage('Clone Repository') {
+    //   steps {
+    //     sh """
+    //       rm -rf order-management-system
+    //       git clone https://github.com/Swathi-dev-coder/order-management-system
+    //     """
+    //   }
+    // }
+
+    // stage('Get Commit Hash') {
+    //   steps {
+    //       dir('order-management-system') {
+    //         script {
+    //           env.GIT_COMMIT_SHORT = sh(
+    //             script: "git rev-parse --short HEAD",
+    //             returnStdout: true
+    //           ).trim()
+    //           echo "Building commit ${env.GIT_COMMIT_SHORT}"
+    //         }
+    //       }
+    //   }
+    // }
+    stage('Checkout Repository') {
       steps {
-        sh """
-          rm -rf order-management-system
-          git clone https://github.com/Swathi-dev-coder/order-management-system
-        """
+        deleteDir() // Clean workspace
+        checkout([$class: 'GitSCM',
+          branches: [[name: '*/main']],
+          userRemoteConfigs: [[url: 'https://github.com/Swathi-dev-coder/order-management-system.git']]
+        ])
       }
     }
 
     stage('Get Commit Hash') {
       steps {
-          dir('order-management-system') {
-            script {
-              env.GIT_COMMIT_SHORT = sh(
-                script: "git rev-parse --short HEAD",
-                returnStdout: true
-              ).trim()
-              echo "Building commit ${env.GIT_COMMIT_SHORT}"
-            }
-          }
+        script {
+          env.GIT_COMMIT_SHORT = sh(
+            script: "git rev-parse --short HEAD",
+            returnStdout: true
+          ).trim()
+          echo "Building commit ${env.GIT_COMMIT_SHORT}"
+        }
       }
     }
+
 
     stage('Build (Maven)') {
       parallel {
