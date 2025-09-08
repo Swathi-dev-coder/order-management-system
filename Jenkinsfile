@@ -20,12 +20,12 @@ pipeline {
   }
   stages {
 
-    stage('Cleanup Workspace') {
-      steps {
-        echo 'Cleaning workspace...'
-        deleteDir()
-      }
-    }
+    // stage('Cleanup Workspace') {
+    //   steps {
+    //     echo 'Cleaning workspace...'
+    //     deleteDir()
+    //   }
+    // }
 
     // stage('Clone Repository') {
     //   steps {
@@ -76,21 +76,21 @@ pipeline {
       parallel {
         stage('userservice') {
           steps {
-              dir('userservice/userservice'){
+              dir('order-management-system/userservice/userservice'){
                   sh 'mvn -B clean package -DskipTests'
               }
           }
         }
         stage('order-service') {
           steps {
-            dir('order-service/order-service') {
+            dir('order-management-system/order-service/order-service') {
               sh 'mvn -B clean package -DskipTests'
             }
           }
         }
         stage('notification-service') {
           steps {
-            dir('notification-service/notification-service') {
+            dir('order-management-system/notification-service/notification-service') {
               sh 'mvn -B clean package -DskipTests'
             }
           }
