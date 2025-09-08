@@ -76,10 +76,9 @@ pipeline {
       parallel {
         stage('userservice') {
           steps {
-            sh'''
-              cd order-management-system/userservice/userservice
-              mvn -B clean package -DskipTests
-            '''
+              dir('order-management-system/userservice/userservice'){
+                  sh 'mvn -B clean package -DskipTests'
+              }
           }
         }
         stage('order-service') {
