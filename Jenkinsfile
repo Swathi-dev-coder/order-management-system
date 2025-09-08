@@ -76,21 +76,21 @@ pipeline {
       parallel {
         stage('userservice') {
           steps {
-              dir('order-management-system/userservice/userservice'){
+              dir('userservice/userservice'){
                   sh 'mvn -B clean package -DskipTests'
               }
           }
         }
         stage('order-service') {
           steps {
-            dir('order-management-system/order-service/order-service') {
+            dir('order-service/order-service') {
               sh 'mvn -B clean package -DskipTests'
             }
           }
         }
         stage('notification-service') {
           steps {
-            dir('order-management-system/notification-service/notification-service') {
+            dir('notification-service/notification-service') {
               sh 'mvn -B clean package -DskipTests'
             }
           }
